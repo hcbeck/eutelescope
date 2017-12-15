@@ -34,12 +34,12 @@ namespace eutelescope {
 			TGeoVolume *plane;
 			
 			// Layout pixel values starting at (0,0)
-			int layoutStartX = 62;
+			int layoutStartX = 61;
 			int layoutStartY = 0;
-			int layoutEndX = 79;
+			int layoutEndX = 78;
 			int layoutEndY = 92;
-			int metalStartX = 65;
-			int metalEndX = 77;
+			int metalStartX = 64;
+			int metalEndX = 76;
 			int metalStartY = 13;
 			int metalEndY = 76;
 			int hexStartY = 43;

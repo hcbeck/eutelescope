@@ -5,7 +5,7 @@ namespace eutelescope {
 
 		FEI4Diamond::FEI4Diamond()
 						: EUTelGenericPixGeoDescr(4.750, 4.650, 0.824, // size X, Y, Z
-																			62, 79, 0, 92,      // min max X,Y
+																			61, 78, 0, 92,      // min max X,Y
 																			12.130681818)          // rad length cm
 		{
 			// TODO X, Y values?
@@ -284,9 +284,8 @@ namespace eutelescope {
 				rightColumn->AddNode(pixel, i+1, new TGeoTranslation(0.0, -i*2.0*pixelY, 0.0));
 			}
 			rightFree->AddNode(rightColumn, 1, new TGeoTranslation(-2.0*pixelX, -pixelY+rightRows*pixelY, 0.0));
-			rightFree->AddNode(rightColumn, 2, new TGeoTranslation(0.0, 0.0, 0.0));
+			rightFree->AddNode(rightColumn, 2, new TGeoTranslation(0.0, -pixelY+rightRows*pixelY, 0.0));
 			rightFree->AddNode(rightColumn, 3, new TGeoTranslation(2.0*pixelX, -pixelY+rightRows*pixelY, 0.0));
-			//rightFree->AddNode(rightColumn, 4, new TGeoTranslation(2.0*pixelX+pixelX, -pixelY+rightRows*pixelY, 0.0));
 			
 			//______________________________________________________________________________________________________________
 			// assemble the whole layout
@@ -351,7 +350,7 @@ namespace eutelescope {
 					buffer += "/rectdColEvenLeft_2/rectdColEvenPart_";
 					evendCol = true;
 				}
-				else if (((x - metalStartX) % 2) == 0){ // odd number of column because shift of 1
+				else if (((x - metalStartX) % 2) == 0){ // even number of FE column because shift of 1
 					if ((((x - metalStartX) / 2) % 2) == 0){ // even number double column
 						buffer += "/rectdColEven_" + std::to_string((x-metalStartX)/2/2);
 						buffer += "/rectdColEvenLeft_2/rectdColEvenPart_";
@@ -363,7 +362,7 @@ namespace eutelescope {
 						evendCol = false;
 					}
 				}
-				else { // even number of column
+				else { // odd number of FE column
 					if ((((x - metalStartX + 1) / 2) % 2) == 0){ // even number double column
 						buffer += "/rectdColEven_" + std::to_string((x-metalStartX+1)/2/2);
 						buffer += "/rectdColEvenLeft_1/rectdColEvenPart_";
@@ -409,7 +408,7 @@ namespace eutelescope {
 					evendCol = true;
 				}
 				
-				else if (((x - metalStartX) % 2) == 0){ // odd number of column because shift of 1
+				else if (((x - metalStartX) % 2) == 0){ // even number of FE column because shift of 1
 					if ((((x - metalStartX) / 2) % 2) == 0){ // even number double column
 						buffer += "/dColEven_" + std::to_string((x-metalStartX)/2/2);
 						buffer += "/dColEvenLeft_2/dColEvenPart";
@@ -421,7 +420,7 @@ namespace eutelescope {
 						evendCol = false;
 					}
 				}
-				else { // even number of column
+				else { // odd number of column
 					if ((((x - metalStartX + 1) / 2) % 2) == 0){ // even number double column
 						buffer += "/dColEven_" + std::to_string((x-metalStartX+1)/2/2);
 						buffer += "/dColEvenLeft_1/dColEvenPart";
