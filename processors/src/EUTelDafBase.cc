@@ -962,7 +962,8 @@ void EUTelDafBase::fillDetailPlots(daffitter::TrackCandidate<float, 4> &track) {
 }
 
 void EUTelDafBase::bookHistos() {
-
+  
+  string tempHistoTitle = "";
   int maxNdof = -4 + _system.planes.size() * 2 + 1;
   _aidaHistoMap["chi2"] =
       AIDAProcessor::histogramFactory(this)->createHistogram1D(
@@ -1025,9 +1026,13 @@ void EUTelDafBase::bookHistos() {
     _aidaHistoMap[bname + "residualX"] =
         AIDAProcessor::histogramFactory(this)->createHistogram1D(
             bname + "residualX", 600, residminX, residmaxX);
+    tempHistoTitle = bname + "residualX; Residual X [mm];";
+    _aidaHistoMap[bname + "residualX"]->setTitle(tempHistoTitle.c_str());
     _aidaHistoMap[bname + "residualY"] =
         AIDAProcessor::histogramFactory(this)->createHistogram1D(
             bname + "residualY", 600, residminX, residmaxX);
+    tempHistoTitle = bname + "residualY; Residual Y [mm];";
+    _aidaHistoMap[bname + "residualY"]->setTitle(tempHistoTitle.c_str());
     // Resids 2D // profiles
     _aidaHistoMapProf1D[bname + "residualdXvsX"] =
         AIDAProcessor::histogramFactory(this)->createProfile1D(

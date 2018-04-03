@@ -459,7 +459,7 @@ void EUTelProcessorHitMaker::bookHistos(int sensorID) {
           (basePath + tempHistoName).c_str(), xNBin, xMin, xMax, yNBin, yMin,
           yMax);
   if (hitHistoLocal) {
-    hitHistoLocal->setTitle("Hit map in the detector local frame of reference");
+    hitHistoLocal->setTitle("Hit map in the detector local frame of reference; X [mm]; Y [mm]");
     _aidaHistoMap.insert(make_pair(tempHistoName, hitHistoLocal));
   } else {
     streamlog_out(ERROR1) << "Problem booking the "
@@ -497,7 +497,7 @@ void EUTelProcessorHitMaker::bookHistos(int sensorID) {
           yMax);
 
   if (hitHistoTelescope) {
-    hitHistoTelescope->setTitle("Hit map in the telescope frame of reference");
+    hitHistoTelescope->setTitle("Hit map in the telescope frame of reference; X [mm]; Y [mm]");
     _aidaHistoMap.insert(make_pair(tempHistoName, hitHistoTelescope));
   } else {
     streamlog_out(ERROR1) << "Problem booking the "

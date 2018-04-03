@@ -943,7 +943,8 @@ void EUTelCorrelator::bookHistos() {
                             to_string(row) + "_d" + to_string(col);
             streamlog_out(DEBUG5) << "Booking histo " << tempHistoName << endl;
             tempHistoTitle = "HitX/" + _hitXCorrelationHistoName + "_d" +
-                             to_string(row) + "_d" + to_string(col);
+                             to_string(row) + "_d" + to_string(col)
+			     + "; Hit X d" + to_string(row) + " [mm] ; Hit X d" + to_string(col) + " [mm]";
 
             histoInfo = histoMgr->getHistogramInfo(_hitXCorrelationHistoName);
             colNBin =
@@ -985,7 +986,8 @@ void EUTelCorrelator::bookHistos() {
                             to_string(row) + "_d" + to_string(col);
             streamlog_out(DEBUG5) << "Booking cloud " << tempHistoName << endl;
             tempHistoTitle = "HitY/" + _hitYCorrelationHistoName + "_d" +
-                             to_string(row) + "_d" + to_string(col);
+                             to_string(row) + "_d" + to_string(col)
+			     + "; Hit Y d" + to_string(row) + " [mm] ; Hit Y d" + to_string(col) + " [mm]";
 
             histoInfo = histoMgr->getHistogramInfo(_hitYCorrelationHistoName);
             colNBin =

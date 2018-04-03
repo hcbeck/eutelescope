@@ -165,6 +165,7 @@ void EUTelPreAlign::init() {
 
 #if defined(USE_AIDA) || defined(MARLIN_USE_AIDA)
   std::string tempHistoName = "";
+  std::string tempHistoTitle = "";
   std::string basePath;
 
   if (_fillHistos) {
@@ -180,12 +181,16 @@ void EUTelPreAlign::init() {
       AIDA::IHistogram1D *histo1Da =
           AIDAProcessor::histogramFactory(this)->createHistogram1D(
               (basePath + tempHistoName).c_str(), 100, -10., 10.);
+      tempHistoTitle = tempHistoName + "; Hit X d" + to_string(_fixedID) + " [mm] ; Corr. hit X in d" + to_string(sensorID) + " [#]";
+      histo1Da->setTitle(tempHistoTitle.c_str());
       _hitXCorr.insert(make_pair(sensorID, histo1Da));
 
       tempHistoName = "hitYCorr_fixed_to_" + to_string(sensorID);
       AIDA::IHistogram1D *histo1Db =
           AIDAProcessor::histogramFactory(this)->createHistogram1D(
               (basePath + tempHistoName).c_str(), 100, -10., 10.);
+      tempHistoTitle = tempHistoName + "; Hit Y d" + to_string(_fixedID) + " [mm] ; Corr. hit Y in d" + to_string(sensorID) + " [#]";
+      histo1Db->setTitle(tempHistoTitle.c_str());
       _hitYCorr.insert(make_pair(sensorID, histo1Db));
     }
   }
