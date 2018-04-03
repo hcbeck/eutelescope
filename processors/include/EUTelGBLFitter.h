@@ -17,10 +17,6 @@
 #include <memory>
 #include "marlin/Processor.h"
 
-// gear includes <.h>
-#include <gear/SiPlanesParameters.h>
-#include <gear/SiPlanesLayerLayout.h>
-
 // lcio includes <.h>
 #include "lcio.h"
 #include <UTIL/CellIDEncoder.h>
@@ -78,7 +74,6 @@ namespace eutelescope {
     EUTelGBLFitter(const EUTelGBLFitter&); 
     void operator=(EUTelGBLFitter const&); 
 
-
     //! Default constructor
     EUTelGBLFitter();
 
@@ -130,50 +125,13 @@ namespace eutelescope {
     //TMatrixD JacobianPointToPoint( double ds );
 
     //! Fill the telescope plane correlation plots:
-    void TelescopeCorrelationPlots(std::vector<EUTelTripletGBLUtility::hit> &telescopehits);
+    void TelescopeCorrelationPlots(std::vector<EUTelTripletGBLUtility::hit> const & telescopehits);
 
-    //! Find hit triplets from three telescope planes
-    /*! This runs over all hits in the planes of the telescope and
-     * tries to match triplets by comparing with the middle planes.
-     * Two cut criteria can be set:
-     * @param triplet_residual_cut Cut on the hit residual in the middle plane with respect to the triplet defined by first and last plane
-     * @param triplet_angle_cut Cut on the triplet track angle
-     *
-     * @return a vector of found triplets among the given set of hits.
-     */
-    //void FindTriplets(std::vector<EUTelTripletGBLUtility::hit> &hits, unsigned int plane0, unsigned int plane1, unsigned int plane2, std::vector<EUTelGBLFitterUtility::triplet> &trip);
-
-    //! Match the upstream and downstream triplets to tracks
-    //void MatchTriplets(std::vector<EUTelGBLFitterUtility::triplet> &up, std::vector<EUTelGBLFitterUtility::triplet> &down, double z_match, std::vector<EUTelGBLFitterUtility::track> &track);
-
-    //! Check isolation of triplet within vector of triplets
-    //bool IsTripletIsolated(std::vector<EUTelGBLFitterUtility::triplet>::iterator it, std::vector<EUTelGBLFitterUtility::triplet> &trip, double z_match, double isolation = 0.3);
-
-  
+    void fillTrackhitHisto(EUTelTripletGBLUtility::hit const & hit, int ipl);
   protected:
-    //! Silicon planes parameters as described in GEAR
-    /*! This structure actually contains the following:
-     *  @li A reference to the telescope geoemtry and layout
-     *  @li An integer number saying if the telescope is w/ or w/o DUT
-     *  @li An integer number saying the number of planes in the
-     *  telescope.
-     *
-     *  This object is provided by GEAR during the init() phase and
-     *  stored here for local use.
-     */
-    gear::SiPlanesParameters * _siPlanesParameters;
-
-    //! Silicon plane layer layout
-    /*! This is the real geoemetry description. For each layer
-     *  composing the telescope the relevant information are
-     *  available.
-     *
-     *  This object is taken from the _siPlanesParameters during the
-     *  init() phase and stored for local use
-     */
-    gear::SiPlanesLayerLayout * _siPlanesLayerLayout;
-
     std::string _inputCollectionTelescope;
+  
+    std::map<size_t, bool> _excludedSensorMap;
 
     //Analysis parameters
     bool _isFirstEvent;
@@ -183,11 +141,9 @@ namespace eutelescope {
     int _nEvt;
     size_t _nPlanes;
     int _ngbl;
-    int _dut_plane;
+    EVENT::IntVec _excluded_planes;
     double _eff_radius;
     double _kappa;
-    double _aluthickum;
-    bool _CSswitch;
     
     // Cuts for matching:
     double _track_match_cut;
@@ -199,26 +155,26 @@ namespace eutelescope {
     std::vector<int> _sensorIDVec;
     std::vector<double>  _planePosition;
     std::vector<double> _planeRadLength;
-    std::map<size_t, std::vector<double>> _planeResolutionX;
-    std::map<size_t, std::vector<double>> _planeResolutionY;
+    std::map<size_t, std::vector<float>> _planeResolutionX;
+    std::map<size_t, std::vector<float>> _planeResolutionY;
 
 	  std::vector<Eigen::Vector2d> _planeWscatSi;
 	  std::vector<Eigen::Vector2d> _planeWscatAir;
 
-    FloatVec _resolution;
-    FloatVec _thickness;
+    FloatVec _telResolution;
+    FloatVec _dutResolutionX;
+    FloatVec _dutResolutionY;
 
     EUTelTripletGBLUtility gblutil;
-
 
       // definition of static members mainly used to name histograms
 #if defined(USE_AIDA) || defined(MARLIN_USE_AIDA)
 
-  AIDA::IHistogram1D * nAllHitHisto;
+  AIDA::IHistogram1D * nAllTelHitHisto;
+  AIDA::IHistogram1D * nAllDUTHitHisto;
 
   // Correlation plots for telescope planes
   AIDA::IHistogram1D * dx01Histo, * dy01Histo, * du01Histo, * dx02Histo, * dx03Histo, * dx04Histo, * dx05Histo, * dx12Histo, * dy12Histo, * du12Histo, * dx23Histo, * dy23Histo, * du23Histo, * dx34Histo, * dy34Histo, * du34Histo, * dx45Histo, * dy45Histo, * du45Histo;
-
 
   // triplets 0-1-2:
   AIDA::IHistogram1D * da02Histo;
@@ -247,7 +203,6 @@ namespace eutelescope {
   AIDA::IHistogram2D * trixydutHisto;
 
   // driplets 3-4-5:
-
   AIDA::IHistogram1D * dx35Histo;
   AIDA::IHistogram1D * dy35Histo;
 
@@ -294,24 +249,12 @@ namespace eutelescope {
 
   AIDA::IProfile2D * kinkpixvsxy;
 
-  AIDA::IHistogram1D * clustersize0;
-  AIDA::IHistogram1D * sixx0Histo;
-  AIDA::IHistogram1D * sixy0Histo;
-  AIDA::IHistogram1D * clustersize1;
-  AIDA::IHistogram1D * sixx1Histo;
-  AIDA::IHistogram1D * sixy1Histo;
-  AIDA::IHistogram1D * clustersize2;
-  AIDA::IHistogram1D * sixx2Histo;
-  AIDA::IHistogram1D * sixy2Histo;
-  AIDA::IHistogram1D * clustersize3;
-  AIDA::IHistogram1D * sixx3Histo;
-  AIDA::IHistogram1D * sixy3Histo;
-  AIDA::IHistogram1D * clustersize4;
-  AIDA::IHistogram1D * sixx4Histo;
-  AIDA::IHistogram1D * sixy4Histo;
-  AIDA::IHistogram1D * clustersize5;
-  AIDA::IHistogram1D * sixx5Histo;
-  AIDA::IHistogram1D * sixy5Histo;
+  std::vector<AIDA::IHistogram1D*> clustersizeTotal;
+  std::vector<AIDA::IHistogram1D*> clustersizeX;
+  std::vector<AIDA::IHistogram1D*> clustersizeY;
+
+  std::vector<AIDA::IHistogram1D*> sixXHistos;
+  std::vector<AIDA::IHistogram1D*> sixYHistos;
 
   AIDA::IHistogram2D * sixxylkHisto;
 
@@ -337,8 +280,6 @@ namespace eutelescope {
   AIDA::IHistogram1D * seldy4Histo;
   AIDA::IHistogram1D * seldx5Histo;
   AIDA::IHistogram1D * seldy5Histo;
-  //AIDA::IHistogram1D * seldx6Histo;
-  //AIDA::IHistogram1D * seldy6Histo;
 
   AIDA::IHistogram1D * gblndfHisto;
   AIDA::IHistogram1D * gblchi2aHisto;
@@ -364,174 +305,37 @@ namespace eutelescope {
   AIDA::IHistogram1D * baddy4Histo;
   AIDA::IHistogram1D * baddx5Histo;
   AIDA::IHistogram1D * baddy5Histo;
-  //AIDA::IHistogram1D * baddx6Histo;
-  //AIDA::IHistogram1D * baddy6Histo;
 
   AIDA::IHistogram1D * goodxHisto;
   AIDA::IHistogram1D * goodyHisto;
   AIDA::IHistogram1D * goodx1Histo;
   AIDA::IHistogram1D * goody1Histo;
-  //AIDA::IHistogram1D * goodx6Histo;
-  //AIDA::IHistogram1D * goody6Histo;
+  
+  std::vector<AIDA::IHistogram1D*> gblaxHistos;
+  std::vector<AIDA::IHistogram1D*> gbldxHistos;
+  std::vector<AIDA::IHistogram1D*> gblrxHistos;
+  std::vector<AIDA::IHistogram1D*> gblryHistos;
+  std::vector<AIDA::IHistogram1D*> gblpxHistos;
+  std::vector<AIDA::IHistogram1D*> gblpyHistos;
+  std::vector<AIDA::IHistogram1D*> gblqxHistos;
 
-  AIDA::IHistogram1D * gblax0Histo;
-  AIDA::IHistogram1D * gbldx0Histo;
-  AIDA::IHistogram1D * gbldx01Histo;
-  AIDA::IHistogram1D * gblrx0Histo;
-  AIDA::IHistogram1D * gblry0Histo;
-  AIDA::IHistogram1D * gblpx0Histo;
-  AIDA::IHistogram1D * gblpx0_unbHisto;
-  AIDA::IHistogram1D * gblpy0Histo;
-  AIDA::IHistogram1D * gblpy0_unbHisto;
-  AIDA::IHistogram1D * gblqx0Histo;
-  AIDA::IProfile1D * gblrxvsx0;
-  AIDA::IProfile1D * gblryvsy0;
-  AIDA::IProfile1D * gblrxvsx01;
-  AIDA::IProfile1D * gblryvsy01;
-  AIDA::IProfile1D * gblrxvsxpix0;
-  AIDA::IProfile1D * gblryvsypix0;
-  AIDA::IProfile1D * gblrxvsxpix01;
-  AIDA::IProfile1D * gblryvsypix01;
-  AIDA::IProfile1D * gblrxvsxpix01_CS1;
-  AIDA::IProfile1D * gblryvsypix01_CS1;
-  AIDA::IProfile1D * gblrxvsxpix01_CS2;
-  AIDA::IProfile1D * gblryvsypix01_CS2;
-  AIDA::IProfile1D * gblrxvsxpix01_CS3;
-  AIDA::IProfile1D * gblryvsypix01_CS3;
-  AIDA::IProfile1D * gblrxvsxpix01_CS4;
-  AIDA::IProfile1D * gblryvsypix01_CS4;
-  AIDA::IProfile1D * gblrxvsxpix51_CS1;
-  AIDA::IProfile1D * gblryvsypix51_CS1;
-  AIDA::IProfile1D * gblrxvsxpix51_CS2;
-  AIDA::IProfile1D * gblryvsypix51_CS2;
-  AIDA::IProfile1D * gblrxvsxpix51_CS3;
-  AIDA::IProfile1D * gblryvsypix51_CS3;
-  AIDA::IProfile1D * gblrxvsxpix51_CS4;
-  AIDA::IProfile1D * gblryvsypix51_CS4;
-  AIDA::IProfile1D * gblrxvsxpix31;
-  AIDA::IProfile1D * gblryvsypix31;
-  AIDA::IProfile1D * gblrxvsxpix3cs1;
-  AIDA::IProfile1D * gblryvsypix3cs1;
-  AIDA::IProfile1D * gblrxvsxpix3cs2;
-  AIDA::IProfile1D * gblryvsypix3cs2;
-  AIDA::IProfile1D * gblrxvsxpix3cs3;
-  AIDA::IProfile1D * gblryvsypix3cs3;
-  AIDA::IProfile1D * gblrxvsxpix3cs4;
-  AIDA::IProfile1D * gblryvsypix3cs4;
-  AIDA::IProfile1D * gblrxvsxpix3cs5;
-  AIDA::IProfile1D * gblryvsypix3cs5;
-  AIDA::IProfile1D * gblrxvsxpix3cs6;
-  AIDA::IProfile1D * gblryvsypix3cs6;
+  std::vector<AIDA::IProfile1D*> gblrxvsx;
+  std::vector<AIDA::IProfile1D*> gblryvsy;
+  std::vector<AIDA::IProfile1D*> gblrxvsx1;
+  std::vector<AIDA::IProfile1D*> gblryvsy1;
 
+  std::vector<AIDA::IProfile1D*> gblrxvsxpix;
+  std::vector<AIDA::IProfile1D*> gblryvsypix;
+  std::vector<AIDA::IProfile1D*> gblrxvsxpix1;
+  std::vector<AIDA::IProfile1D*> gblryvsypix1;
 
-  AIDA::IHistogram1D * gblax1Histo;
-  AIDA::IHistogram1D * gbldx1Histo;
-  AIDA::IHistogram1D * gbldx11Histo;
-  AIDA::IHistogram1D * gblrx1Histo;
-  AIDA::IHistogram1D * gblry1Histo;
-  AIDA::IHistogram1D * gblpx1Histo;
-  AIDA::IHistogram1D * gblpx1_unbHisto;
-  AIDA::IHistogram1D * gblpy1Histo;
-  AIDA::IHistogram1D * gblpy1_unbHisto;
-  AIDA::IHistogram1D * gblqx1Histo;
-  AIDA::IHistogram1D * gblsx1Histo;
-  AIDA::IHistogram1D * gbltx1Histo;
+  std::vector<std::vector<AIDA::IProfile1D*>> gblrxvsxpix1CS;
+  std::vector<std::vector<AIDA::IProfile1D*>> gblryvsypix1CS;
 
-  AIDA::IHistogram1D * gblax2Histo;
-  AIDA::IHistogram1D * gbldx2Histo;
-  AIDA::IHistogram1D * gbldx21Histo;
-  AIDA::IHistogram1D * gblrx2Histo;
-  AIDA::IHistogram1D * gblry2Histo;
-  AIDA::IHistogram1D * gblpx2Histo;
-  AIDA::IHistogram1D * gblpx2_unbHisto;
-  AIDA::IHistogram1D * gblpy2Histo;
-  AIDA::IHistogram1D * gblpy2_unbHisto;
-  AIDA::IHistogram1D * gblqx2Histo;
-  AIDA::IHistogram1D * gblsx2Histo;
-  AIDA::IHistogram1D * gbltx2Histo;
-
-  AIDA::IHistogram1D * gblax3Histo;
-  AIDA::IHistogram1D * gbldx3Histo;
-  AIDA::IHistogram1D * gbldx31Histo;
-  AIDA::IHistogram1D * gblrx3Histo;
-  AIDA::IHistogram1D * gblry3Histo;
-  AIDA::IHistogram1D * gblrx3_cs1Histo;
-  AIDA::IHistogram1D * gblry3_cs1Histo;
-  AIDA::IHistogram1D * gblrx3_cs2Histo;
-  AIDA::IHistogram1D * gblry3_cs2Histo;
-  AIDA::IHistogram1D * gblrx3_cs3Histo;
-  AIDA::IHistogram1D * gblry3_cs3Histo;
-  AIDA::IHistogram1D * gblrx3_cs4Histo;
-  AIDA::IHistogram1D * gblry3_cs4Histo;
-  AIDA::IHistogram1D * gblrx3_cs5Histo;
-  AIDA::IHistogram1D * gblry3_cs5Histo;
-  AIDA::IHistogram1D * gblrx3_cs6Histo;
-  AIDA::IHistogram1D * gblry3_cs6Histo;
-  AIDA::IHistogram1D * gblpx3Histo;
-  AIDA::IHistogram1D * gblpy3Histo;
-  AIDA::IHistogram1D * gblpx3_cs1Histo;
-  AIDA::IHistogram1D * gblpy3_cs1Histo;
-  AIDA::IHistogram1D * gblpx3_cs2Histo;
-  AIDA::IHistogram1D * gblpy3_cs2Histo;
-  AIDA::IHistogram1D * gblpx3_cs3Histo;
-  AIDA::IHistogram1D * gblpy3_cs3Histo;
-  AIDA::IHistogram1D * gblpx3_cs4Histo;
-  AIDA::IHistogram1D * gblpy3_cs4Histo;
-  AIDA::IHistogram1D * gblpx3_cs5Histo;
-  AIDA::IHistogram1D * gblpy3_cs5Histo;
-  AIDA::IHistogram1D * gblpx3_cs6Histo;
-  AIDA::IHistogram1D * gblpy3_cs6Histo;
-  AIDA::IHistogram1D * gblpx3_cs7Histo;
-  AIDA::IHistogram1D * gblpy3_cs7Histo;
-  AIDA::IHistogram1D * gblpx3_unbHisto;
-  AIDA::IHistogram1D * gblpy3_unbHisto;
-  AIDA::IHistogram1D * gblqx3Histo;
-  AIDA::IHistogram1D * gblsx3Histo;
-  AIDA::IHistogram1D * gbltx3Histo;
-
-  AIDA::IHistogram1D * gblax4Histo;
-  AIDA::IHistogram1D * gbldx4Histo;
-  AIDA::IHistogram1D * gbldx41Histo;
-  AIDA::IHistogram1D * gblrx4Histo;
-  AIDA::IHistogram1D * gblry4Histo;
-  AIDA::IHistogram1D * gblpx4Histo;
-  AIDA::IHistogram1D * gblpx4_unbHisto;
-  AIDA::IHistogram1D * gblpy4Histo;
-  AIDA::IHistogram1D * gblpy4_unbHisto;
-  AIDA::IHistogram1D * gblqx4Histo;
-  AIDA::IHistogram1D * gblsx4Histo;
-  AIDA::IHistogram1D * gbltx4Histo;
-
-  AIDA::IHistogram1D * gblax5Histo;
-  AIDA::IHistogram1D * gbldx5Histo;
-  AIDA::IHistogram1D * gbldx51Histo;
-  AIDA::IHistogram1D * gblrx5Histo;
-  AIDA::IHistogram1D * gblry5Histo;
-  AIDA::IHistogram1D * gblpx5Histo;
-  AIDA::IHistogram1D * gblpx5_unbHisto;
-  AIDA::IHistogram1D * gblpy5Histo;
-  AIDA::IHistogram1D * gblpy5_unbHisto;
-  AIDA::IHistogram1D * gblqx5Histo;
-
-  /*AIDA::IHistogram1D * gblax6Histo;
-  AIDA::IHistogram1D * gbldx6Histo;
-  AIDA::IHistogram1D * gbldy6Histo;
-  AIDA::IHistogram1D * gblrx6Histo;
-  AIDA::IHistogram1D * gblry6Histo;
-  AIDA::IHistogram1D * gblpx6Histo;
-  AIDA::IHistogram1D * gblpy6Histo;
-  AIDA::IHistogram1D * gblqx6Histo;
-  AIDA::IHistogram1D * gblsx6Histo;
-  AIDA::IHistogram1D * gbltx6Histo;*/
+  std::vector<AIDA::IHistogram1D*> gblkxHistos;
 
   AIDA::IHistogram1D * gblkxCentreHisto;
   AIDA::IHistogram1D * gblkxCentre1Histo;
-  AIDA::IHistogram1D * gblkx1Histo;
-  AIDA::IHistogram1D * gblkx2Histo;
-  AIDA::IHistogram1D * gblkx3Histo;
-  AIDA::IHistogram1D * gblkx4Histo;
-  AIDA::IHistogram1D * gblkx5Histo;
-  //AIDA::IHistogram1D * gblkx6Histo;
 
   AIDA::IHistogram1D * sixzx3Histo;
   AIDA::IHistogram1D * sixzy3Histo;
@@ -547,10 +351,18 @@ namespace eutelescope {
 
   AIDA::IHistogram1D * hIso;
 
+  std::vector<AIDA::IProfile2D*> gblnxy;
+  std::vector<AIDA::IHistogram2D*> gblnxy1;
+  std::vector<AIDA::IHistogram2D*> gblcluxvscluy;
+
   AIDA::IProfile2D * gblnxy_plane0;
   AIDA::IHistogram2D * gblnxy1_plane0;
   AIDA::IProfile2D * gblnxy_plane3;
   AIDA::IHistogram2D * gblnxy1_plane3;
+
+  std::vector<std::vector<AIDA::IHistogram2D*>> gblnCSxy_tot;
+  std::vector<std::vector<AIDA::IHistogram2D*>> gblnCSxy_x;
+  std::vector<std::vector<AIDA::IHistogram2D*>> gblnCSxy_y;
 
   AIDA::IHistogram2D * gblnCS1xy_plane0;
   AIDA::IHistogram2D * gblnCS2xy_plane0;
@@ -577,13 +389,8 @@ namespace eutelescope {
   AIDA::IHistogram2D * gblnCS7xy1_plane3;
 
 #endif
-
   };
-
   //! A global instance of the processor:
-  //EUTelGBLFitter aEUTelGBLFitter;
-
-
+  EUTelGBLFitter aEUTelGBLFitter;
 }
-
 #endif
